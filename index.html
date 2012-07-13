@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="jquery.min.js" type="text/javascript"></script>
+    <script src="jquery-miniCOlors/jquery.miniColors.min.js"></script>
+    <script src="CodeMirror-2.3/lib/codemirror.js"></script>
+    <script src="CodeMirror-2.3/mode/javascript/javascript.js"></script>
+    <script>
+      $(document).ready(function(){
+
+        var ctx = document.getElementById("drawing")
+                          .getContext('2d');
+
+        ctx.canvas.width  = window.innerWidth;
+
+        $(window).resize(function (){
+          ctx.canvas.width  = window.innerWidth;
+        });
+
+        function highlight () {
+          if (code.getSelection().isColor() && $(".miniColors-selector").length == 0 && $("#range").is(":hidden")) {
+            $(".miniColors-selector").remove();
+            $("#picker").miniColors("value", code.getSelection());
+            setTimeout(function(){
+              $(".miniColors-trigger").click();
+              $(".miniColors-selector").css("top", $(".CodeMirror-selected").offset().top + 15);
+              $(".miniColors-selector").css("left", $(".CodeMirror-selected").offset().left);
+            },10);
+          }
+
+          if (("#" + code.getSelection()).isColor() && $(".miniColors-selector").length == 0 && $("#range").is(":hidden")) {
+            $(".miniColors-selector").remove();
+            $("#picker").miniColors("value", "#" + code.getSelection());
+            setTimeout(function(){
+              $(".miniColors-trigger").click();
+              $(".miniColors-selector").css("top", $(".CodeMirror-selected").offset().top + 15);
+              $(".miniColors-selector").css("left", $(".CodeMirror-selected").offset().left);
+            },10);
+          }
+
+          if (code.getSelection() != "" && isFinite(code.getSelection())) {
+            if($("#range").is(":hidden")){
+              $("#range").show();
+              var current = parseFloat(code.getSelection());
+              if (Math.abs(current) < 1) {
+                $("#range").attr("min",current-1);
+                $("#range").attr("max",current+1);
+              } else if (Math.abs(current) < 10) {
+                $("#range").attr("min",current-5);
+                $("#range").attr("max",current+5);
+              } else if (Math.abs(current) < 100) {
+                $("#range").attr("min",current-50);
+                $("#range").attr("max",current+50);
+              }
+              $("#range").val(current);
+              $("#range").css("top", $(".CodeMirror-selected").offset().top + 15);
+              $("#range").css("left", $(".CodeMirror-selected").offset().left);
+            }
+          } else {
+            $("#range").hide();
+          }
+        };
+
+        var interval = setInterval(tick, 10);
+        var code = CodeMirror.fromTextArea(document.getElementById("code"), { onCursorActivity: highlight});
+        var lastError = "";
+        var initExecuted = false;
+
+        $("#picker").miniColors({
+          change: function(hex, rgb) {
+            if (code.getSelection().indexOf("#") > -1 || (code.getSelection()).isColor() && !("#" + code.getSelection()).isColor()) {
+              code.replaceSelection(hex);
+            } else {
+              code.replaceSelection(hex.replace("#",""));
+            }
+          }
+        });
+
+        $("#load").change(function(){
+          code.setValue($("#" + $(this).val()).val());
+          $("#restart").click();
+        });
+
+        $("#range").change(function(){
+          code.replaceSelection("" + Math.round(parseFloat($(this).val())*10000)/10000);
+        });
+
+        $("#restart").click(function() {
+          eval(code.getValue().match(/function init(.*[\s\S].*)*}/g)[0]);
+          init();
+          if (typeof(init) == "function") {
+            initExecuted = false;
+          }
+        });
+
+        $("#pause").click(function() {
+          if ($(this).hasClass("paused")){
+            interval = setInterval(tick, 10);
+            $(this).attr("id","pause");
+            $(this).html("Pause");
+          } else {
+            clearInterval(interval);
+            $(this).attr("id","play");
+            $(this).html("Play");
+          }
+          $(this).toggleClass("paused");
+        });
+        
+        function tick() {
+          try {
+
+            if (initExecuted == false) {
+              eval(code.getValue().match(/function init(.*[\s\S].*)*}/g)[0]);
+              init();
+              initExecuted = true;
+            }
+            ctx.restore();
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            eval(code.getValue());
+
+
+          } catch(err) {
+            if (err != lastError) {
+              console.log(err);
+              lastError = err;
+            }
+          }
+        }
+
+        String.prototype.isColor = function () {
+          var test = $("#test").css("color", this);
+
+          if (test.attr("style") && (this.length > 6 && this.match("#") || !this.match("#")))
+            return true;
+          else
+            return false;
+        };
+      });
+    </script>
+    <link rel="stylesheet" href="CodeMirror-2.3/lib/codemirror.css">
+    <link rel="stylesheet" href="jquery-miniColors/jquery.miniColors.css">
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+        font-family: sans-serif;
+        font-size: 12px;
+      }
+
+      .right {
+        float: right;
+        margin-top: 5px;
+        margin-right: 5px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      #code {
+        width: 100%;
+        font-family: monospace;
+      }
+
+      #test, #picker, #range{
+        display: none;
+      }
+
+      #range {
+        position: absolute;
+        z-index: 100;
+        background: black;
+      }
+
+      .miniColors-trigger {
+        display: none;
+      }
+
+      .CodeMirror {
+        box-shadow: inset 0 6px 21px -9px #666;
+      }
+
+      .CodeMirror-scroll {
+        height: auto;
+        overflow-y: hidden;
+        overflow-x: auto;
+      }
+
+      #drawing {
+        box-shadow: inset 0 -6px 21px -9px #666;
+      }
+
+      button {
+        padding: 5px;
+        margin: 5px;
+        margin-bottom: 9px;
+        display: inline-block;
+      }
+
+      hr {
+        border: 0;
+        background-color: #ccc;
+        height: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="drawing" width="500" height="300"></canvas>
+    <button id="restart">Restart</button>
+    <button id="pause">Pause</button>
+    <input id="range" type="range" min="0" max="100" step="any">
+    <div class="right">
+      Load Program:
+      <select id="load">
+        <option value="code">Bouncing Balls</option>
+        <option value="heart">Beating Heart</option>
+        <option value="graph">Graphing Calculator</option>
+      </select>
+    </div>
+    <textarea id="code">
+friction = 0.9;
+gravity  = 0.1;
+
+$(balls).each(function() {
+
+  Ball.prototype.draw = function () {
+    ctx.fillStyle = this.color;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.beginPath();
+    ctx.arc(this.r,this.r,this.r,0,Math.PI*2,false);
+    ctx.fill();
+    ctx.restore();
+  };
+
+  this.draw();
+  this.dy += gravity;
+  this.x += this.dx;
+  this.y += this.dy;
+  if (this.y + this.r > ctx.canvas.height) {
+    this.dy = -this.dy * friction;
+    this.y = ctx.canvas.height - this.r;
+  }
+});
+
+// This function is only executed once. It must be the last piece of code in your program.
+function init () {
+  offset = { x: 0, y: 0};
+  Ball = function (x,y,r,dx,dy,color) {
+    this.x = x;
+    this.y = y;
+    this.r = r;
+    this.dx = dx;
+    this.dy = dy;
+    this.color = color;
+  }
+
+  balls = [];
+  balls.push(new Ball(0,0,10,1,0,"red"));
+  balls.push(new Ball(50,10,20,.5,0,"blue"));
+}
+    </textarea>
+<textarea id="heart" class="hidden">
+function drawHeart() {
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.moveTo(75,40);
+  ctx.bezierCurveTo(75,37,70,25,50,25);
+  ctx.bezierCurveTo(20 + Math.sin(s)*5,25,20,62.5,20,62.5);
+  ctx.bezierCurveTo(20,80 + Math.sin(s)*5,40,102,75,120);
+  ctx.bezierCurveTo(110 + Math.sin(s)*5,102,130,80,130,62.5 );
+  ctx.bezierCurveTo(130,62.5+ Math.sin(s)*5,130,25,100,25);
+  ctx.bezierCurveTo(85,25,75,37,75,40);
+  ctx.fill();
+}
+
+ctx.save();
+ctx.translate(offset.x, offset.y);
+drawHeart();
+ctx.restore();
+
+offset.x += Math.sin(r);
+offset.y += Math.cos(r);
+s += .4;
+r += .1;
+
+function init() {
+  offset = {x: ctx.canvas.width/2 - 100, y: ctx.canvas.height/2 - 100};
+
+  s = 0;
+  r = 0;
+}
+</textarea>
+<textarea id="graph" class="hidden">
+function f(x) {
+  return Math.sin((x + dx)/32) * Math.sin(dx/50) * 50;
+}
+
+
+ctx.fillStyle = "#ccc";
+ctx.font = "10pt Helvetica";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+
+ctx.save();
+ctx.translate(15, -20);
+ctx.beginPath();
+for (var x = 0; x <= ctx.canvas.width; x++) {
+  ctx.lineTo(x,ctx.canvas.height/2 - f(x));
+  if (x % 50 == 0)
+    ctx.fillText(x, x , ctx.canvas.height);
+}
+for (var y = 0; y <= ctx.canvas.height; y++) {
+  if (y % 50 == 0)
+    ctx.fillText(y, 0 , ctx.canvas.height - y);
+}
+ctx.stroke();
+ctx.restore();
+
+dx += 0.5;
+
+function init(){
+  dx = 1;
+}
+</textarea>
+    <span id="test"></span>
+    <input id="picker"></input>
+  </body>
+</html>

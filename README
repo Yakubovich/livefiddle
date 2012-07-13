@@ -1,0 +1,12 @@
+Live Fiddle - Create an edit javascript canvas programs while they are running
+Copyright(c) 2012 Ilya Yakubovich <yak.nu>
+MIT Licensed.
+
+Includes code from the following projects:
+
+- CodeMirror (codemirror.net/)
+- jQuery MiniColors (github.com/claviska/jquery-miniColors/)
+- jQuery (jquery.com)
+
+Inspired by this talk by Bret Victor: http://www.youtube.com/watch?v=PUv66718DII
+
