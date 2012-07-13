@@ -17,12 +17,14 @@
     <button id="restart">Restart</button>
     <button id="pause">Pause</button>
     <input id="range" type="range" min="0" max="100" step="any">
+    <input id="varvalue">
     <div class="right">
       Load Program:
       <select id="load">
         <option value="graph">Graphing Calculator</option>
         <option value="code">Bouncing Balls</option>
         <option value="heart">Beating Heart</option>
+        <option value="sprite">Sprite</option>
       </select>
     </div>
     <textarea id="code" class="hidden">
@@ -99,11 +101,113 @@ function init() {
   r = 0;
 }
 </textarea>
+<textarea id="sprite" class="hidden">
+
+Character.prototype.draw = function(row, col) {
+  if (row >= 0) {
+    ctx.drawImage(this.image, 
+                  this.width * col,
+                  row * this.height,
+                  this.width,
+                  this.height,
+                  Math.round(this.x),
+                  Math.round(this.y),
+                  this.width,
+                  this.height); 
+  } else {
+    ctx.save();
+    ctx.scale(-1,1);
+    row = -row;
+    ctx.drawImage(this.image,
+                  this.width * col,
+                  row * this.height,
+                  this.width,
+                  this.height,
+                  -Math.round(this.x) - this.width,
+                  Math.round(this.y),
+                  this.width,
+                  this.height); 
+    ctx.restore();
+  }
+}
+
+Character.prototype.nextFrame = function() {
+  this.draw(this.direction, this.frame);
+  if (time % 10 == 0)
+    this.frame = this.frame < 2 ? this.frame + 1 : 0;
+}
+
+time++;
+guy.y += guy.dy;
+guy.x += guy.dx;
+guy.nextFrame();
+
+if (guy.y > 200) {
+  guy.dy = 0;
+  guy.dx = 1;
+  guy.y = 200
+} else if (guy.x > 300) {
+  guy.dy = -1;
+  guy.dx = 0;
+  guy.x = 300;
+} else if (guy.y < 50) {
+  guy.dy = 0;
+  guy.dx = -1;
+  guy.y = 50;
+} else if (guy.x < 50) {
+  guy.dy = 1;
+  guy.dx = 0;
+  guy.x = 50;
+}
+
+if (Math.abs(guy.dx) > Math.abs(guy.dy)) {
+  if (guy.dx > 0)
+    guy.direction = RIGHT;
+  else
+    guy.direction = LEFT;
+} else {
+  if (guy.dy > 0)
+    guy.direction = DOWN;
+  else
+    guy.direction = UP;
+}
+
+
+function init () {
+  
+  time = 0;
+
+  UP = 0;
+  LEFT = -1;
+  RIGHT = 1;
+  DOWN = 2;
+
+  Character = function (options) {
+    this.image = new Image();
+    this.image.src = options.src;
+    this.width = options.width;
+    this.height = options.height;
+    this.x = options.x;
+    this.y = options.y;
+    this.dy = 1;
+    this.dx = 0;
+    this.frame = 0;
+    this.direction = DOWN;
+  }
+
+  guy = new Character({ src: "ch-guy.png",
+                        x:      50,
+                        y:      50,
+                        width:  24,
+                        height: 33
+                      });
+}
+</textarea>
 <textarea id="graph" class="hidden">
 
 /* You can fiddle with this code and see the results live! Try selecting the amplitude (50) and moving the slider to change its value. */
 
-var amplitude = 50;
+amplitude = 50;
 
 function f(x) {
   return Math.sin((x + dx)/32) * Math.sin(dx/50) * amplitude;
