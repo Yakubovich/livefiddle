@@ -27,6 +27,7 @@
         <option value="heart">Beating Heart</option>
         <option value="sprite">Sprite</option>
         <option value="three">Three.js</option>
+        <option value="three2">Another Three.js Example</option>
       </select>
     </div>
     <textarea id="code" class="hidden">
@@ -206,13 +207,8 @@ function init () {
 }
 </textarea>
 <textarea id="three" class="hidden">
-
-if (typeof(renderer) != "undefined") {
-  renderer.render(scene,camera);
-  mesh.rotation.x += 0.01;
-  mesh.rotation.y += 0.02;
-  console.log("rendering");
-}
+renderer.render(scene,camera);
+console.log(renderer);
 
 function init() {
   scene = new THREE.Scene();
@@ -221,10 +217,11 @@ function init() {
   camera.position.z = 1000;
   scene.add(camera);
 
-  geometry = new THREE.CubeGeometry( 200, 200, 200 );
+  geometry = new THREE.CubeGeometry( 300, 200, 200 );
   material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
 
   mesh = new THREE.Mesh( geometry, material );
+
   scene.add( mesh );
 
   renderer = new THREE.CanvasRenderer();
@@ -232,6 +229,97 @@ function init() {
   renderer.domElement.setAttribute("id", "drawing");
 
   document.body.replaceChild( renderer.domElement, document.getElementById("drawing") );
+}
+</textarea>
+<textarea id="three2" class="hidden">
+
+renderer.render(scene,camera);
+mesh.rotation.x += 0.01;
+mesh.rotation.y += 0.02;
+
+function init() {
+
+  camz = 3000;
+
+  SHADOW_MAP_WIDTH = 1024, SHADOW_MAP_HEIGHT = 512;
+
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2( 0x111111, 0.00098 );
+
+  camera = new THREE.PerspectiveCamera( 60, ctx.canvas.width / ctx.canvas.height, 1, 10000 );
+  camera.position.z = camz;
+  camera.position.y = 100;
+  camera.lookAt(new THREE.Vector3(0,-94,0));
+  scene.add( camera );
+
+  // Ground
+  var planeGeometry = new THREE.PlaneGeometry(10000,10000);
+  var planeMaterial = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture( "Ratamahatta.jpg" ), shading:THREE.FlatShading, ambient: 0x666666, color: 0xffffff, specular: 0x666666, shininess: 1000000 } );
+  planeMaterial.map.repeat.x = 30;
+  planeMaterial.map.repeat.y = 30;
+  planeMaterial.map.wrapS = THREE.RepeatWrapping;
+  planeMaterial.map.wrapT = THREE.RepeatWrapping;
+
+  plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  plane.rotation.x = -Math.PI/2;
+  plane.rotation.z = -Math.PI*0.75;
+  plane.position.y = -94;
+  plane.castShadow = false;
+  plane.receiveShadow = true;
+  scene.add( plane );
+
+  // Lights
+  ambient = new THREE.AmbientLight( 0x333333 );
+  scene.add( ambient );
+
+  light = new THREE.SpotLight( 0xffffff );
+  light.position.set( 100, 350, 140 );
+  light.target.position.set( 0, -94, 0 );
+
+  light.castShadow = true;
+
+  light.shadowCameraNear = 1;
+  light.shadowCameraFar = camera.far;
+  light.shadowCameraFov = 50;
+
+  light.shadowBias = 0.000001;
+  light.shadowDarkness = 0.15;
+
+  light.shadowMapWidth = SHADOW_MAP_WIDTH;
+  light.shadowMapHeight = SHADOW_MAP_HEIGHT;
+
+  scene.add( light );
+
+  // Model
+  loader = new THREE.JSONLoader();
+
+  material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture( "Ratamahatta.jpg" ), ambient: 0x999999, color: 0xffffff, specular: 0xffffff, shininess: 25, morphTargets: true } );
+
+  loader.load( "testmodel.js", function( geometry ) {
+
+    mesh = new THREE.MorphAnimMesh( geometry, material );
+    mesh.rotation.y = -Math.PI/2;
+    mesh.scale.set(4,4,4);
+    mesh.duration = 1000*20;
+    mesh.castShadow = true;
+    mesh.receiveShadow = false;
+
+    scene.add( mesh );
+
+  } );
+
+  // renderer
+  renderer = new THREE.WebGLRenderer({antialias: false});
+  renderer.setClearColorHex( 0x111111, 1 );
+  renderer.setSize( ctx.canvas.width, ctx.canvas.height );
+  //THREEx.WindowResize(renderer, camera);
+  
+  renderer.shadowMapEnabled = true;
+  renderer.shadowMapSoft = true;
+  renderer.domElement.setAttribute("id", "drawing");
+  document.body.replaceChild( renderer.domElement, document.getElementById("drawing") );
+  has_gl = true;
+
 }
 </textarea>
 <textarea id="graph" class="hidden">
