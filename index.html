@@ -6,6 +6,7 @@
     <script src="jquery-miniColors/jquery.miniColors.min.js" type="text/javascript"></script>
     <script src="CodeMirror-2.3/lib/codemirror.js" type="text/javascript"></script>
     <script src="CodeMirror-2.3/mode/javascript/javascript.js" type="text/javascript"></script>
+    <script src="../three.js/build/Three.js" type="text/javascript"></script>
     <script src="livefiddle.js" type="text/javascript"></script>
     <link rel="stylesheet" href="CodeMirror-2.3/lib/codemirror.css">
     <link rel="stylesheet" href="jquery-miniColors/jquery.miniColors.css">
@@ -25,6 +26,7 @@
         <option value="code">Bouncing Balls</option>
         <option value="heart">Beating Heart</option>
         <option value="sprite">Sprite</option>
+        <option value="three">Three.js</option>
       </select>
     </div>
     <textarea id="code" class="hidden">
@@ -69,7 +71,7 @@ function init () {
   balls.push(new Ball(0,0,10,1,0,"red"));
   balls.push(new Ball(50,10,20,.5,0,"blue"));
 }
-    </textarea>
+</textarea>
 <textarea id="heart" class="hidden">
 function drawHeart() {
   ctx.fillStyle = "red";
@@ -201,6 +203,35 @@ function init () {
                         width:  24,
                         height: 33
                       });
+}
+</textarea>
+<textarea id="three" class="hidden">
+
+if (typeof(renderer) != "undefined") {
+  renderer.render(scene,camera);
+  mesh.rotation.x += 0.01;
+  mesh.rotation.y += 0.02;
+  console.log("rendering");
+}
+
+function init() {
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera( 75, ctx.canvas.width / ctx.canvas.height, 1, 10000 );
+  camera.position.z = 1000;
+  scene.add(camera);
+
+  geometry = new THREE.CubeGeometry( 200, 200, 200 );
+  material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+
+  mesh = new THREE.Mesh( geometry, material );
+  scene.add( mesh );
+
+  renderer = new THREE.CanvasRenderer();
+  renderer.setSize( ctx.canvas.width, ctx.canvas.height );
+  renderer.domElement.setAttribute("id", "drawing");
+
+  document.body.replaceChild( renderer.domElement, document.getElementById("drawing") );
 }
 </textarea>
 <textarea id="graph" class="hidden">

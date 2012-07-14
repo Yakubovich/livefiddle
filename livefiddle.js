@@ -1,5 +1,6 @@
 $(document).ready(function(){
 
+  var paused = false;
   var ctx = document.getElementById("drawing")
                     .getContext('2d');
 
@@ -74,7 +75,8 @@ $(document).ready(function(){
     }
   };
 
-  var interval = setInterval(tick, 10);
+  //var interval = setInterval(tick, 10);
+  tick();
   var code = CodeMirror.fromTextArea(document.getElementById("graph"), { onCursorActivity: highlight});
   var lastError = "";
   var initExecuted = false;
@@ -92,6 +94,8 @@ $(document).ready(function(){
   $("#load").change(function(){
     code.setValue($("#" + $(this).val()).val());
     $("#restart").click();
+    ctx = document.getElementById("drawing")
+                  .getContext('2d');
   });
 
   $("#range").change(function(){
@@ -106,19 +110,19 @@ $(document).ready(function(){
 
   $("#restart").click(function() {
     eval(code.getValue().match(/function init(.*[\s\S].*)*}/g)[0]);
-    init();
     if (typeof(init) == "function") {
-      initExecuted = false;
+      init();
+      initExecuted = true;
     }
   });
 
   $("#pause").click(function() {
     if ($(this).hasClass("paused")){
-      interval = setInterval(tick, 10);
+      paused = false;
       $(this).attr("id","pause");
       $(this).html("Pause");
     } else {
-      clearInterval(interval);
+      paused = true;
       $(this).attr("id","play");
       $(this).html("Play");
     }
@@ -133,15 +137,17 @@ $(document).ready(function(){
         init();
         initExecuted = true;
       }
-      ctx.restore();
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-      if ($("#varvalue").is(":visible")) {
-        $("#varvalue").val(eval(code.getSelection()));
+      if (!paused) {
+        ctx.restore();
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        if ($("#varvalue").is(":visible")) {
+          $("#varvalue").val(eval(code.getSelection()));
+        }
+
+        eval(code.getValue());
       }
-
-      eval(code.getValue());
-
 
     } catch(err) {
       if (err != lastError) {
@@ -149,6 +155,8 @@ $(document).ready(function(){
         lastError = err;
       }
     }
+
+    requestAnimationFrame(tick);
   }
 
   String.prototype.isColor = function () {
