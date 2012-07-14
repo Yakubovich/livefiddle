@@ -208,7 +208,9 @@ function init () {
 </textarea>
 <textarea id="three" class="hidden">
 renderer.render(scene,camera);
-console.log(renderer);
+
+mesh.rotation.x += 0.05;
+mesh.rotation.y += 0.01;
 
 function init() {
   scene = new THREE.Scene();
@@ -224,24 +226,20 @@ function init() {
 
   scene.add( mesh );
 
-  renderer = new THREE.CanvasRenderer();
+  renderer = new THREE.CanvasRenderer({ canvas: document.getElementById("drawing") });
   renderer.setSize( ctx.canvas.width, ctx.canvas.height );
-  renderer.domElement.setAttribute("id", "drawing");
 
-  document.body.replaceChild( renderer.domElement, document.getElementById("drawing") );
 }
 </textarea>
 <textarea id="three2" class="hidden">
 
 renderer.render(scene,camera);
-mesh.rotation.x += 0.01;
-mesh.rotation.y += 0.02;
 
 function init() {
 
   camz = 3000;
 
-  SHADOW_MAP_WIDTH = 1024, SHADOW_MAP_HEIGHT = 512;
+  SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 1024;
 
   scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2( 0x111111, 0.00098 );
@@ -309,14 +307,11 @@ function init() {
   } );
 
   // renderer
-  renderer = new THREE.WebGLRenderer({antialias: false});
+  renderer = new THREE.CanvasRenderer({ canvas: document.getElementById("drawing"), antialias: false });
   renderer.setClearColorHex( 0x111111, 1 );
   renderer.setSize( ctx.canvas.width, ctx.canvas.height );
-  
   renderer.shadowMapEnabled = true;
   renderer.shadowMapSoft = true;
-  //renderer.domElement.setAttribute("id", "drawing");
-  document.body.replaceChild( renderer.domElement, document.getElementById("drawing") );
   has_gl = true;
 
 }
