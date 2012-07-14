@@ -312,11 +312,10 @@ function init() {
   renderer = new THREE.WebGLRenderer({antialias: false});
   renderer.setClearColorHex( 0x111111, 1 );
   renderer.setSize( ctx.canvas.width, ctx.canvas.height );
-  //THREEx.WindowResize(renderer, camera);
   
   renderer.shadowMapEnabled = true;
   renderer.shadowMapSoft = true;
-  renderer.domElement.setAttribute("id", "drawing");
+  //renderer.domElement.setAttribute("id", "drawing");
   document.body.replaceChild( renderer.domElement, document.getElementById("drawing") );
   has_gl = true;
 
